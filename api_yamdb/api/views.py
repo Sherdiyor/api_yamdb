@@ -1,16 +1,57 @@
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.viewsets import ModelViewSet
-from reviews.models import Review
+from rest_framework import mixins, viewsets
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.filters import SearchFilter
 
-from .permissions import IsAuthorAdminModeratorOrReadOnly
-from .serializers import CommentSerializer, ReviewSerializer
+from reviews.models import Review, Category, Title
+from .permissions import IsAuthorAdminModeratorOrReadOnly, IsAdminOrGetList, IsAdminOrReadOnly
+from .serializers import (
+    CommentSerializer,
+    ReviewSerializer,
+    CategorySerializer,
+    TitleReadSerializer,
+    TitleCreateSerializer
+)
+from .filters import TitleFilter
 
 
-...
+class AbstractViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
+
+
+class CategoryViewSet(AbstractViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrGetList,)
+    pagination_class = LimitOffsetPagination
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = ('slug',)
+
+
+class TitleViewSet(ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleCreateSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ['update', 'partial_update', 'create']:
+            return TitleCreateSerializer
+        return TitleReadSerializer
 
 
 class ReviewViewSet(ModelViewSet):
