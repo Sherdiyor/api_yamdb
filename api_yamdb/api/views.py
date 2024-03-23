@@ -16,7 +16,7 @@ from rest_framework.filters import SearchFilter
 
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly,
-                          IsAdminOrGetList)
+                          )
 from .serializers import (ConfirmationCodeSerializer, UserCreationSerializer,
                           UserSerializer, ConfirmationCodeSerializer,
                           MeSerializer)
@@ -122,14 +122,14 @@ class AbstractViewSet(
 class CategoryViewSet(AbstractViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrGetList,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
-    lookup_field = ('slug',)
 
 
 class TitleViewSet(ModelViewSet):
+    http_method_names = ['get', 'head', 'options', 'post', 'patch', 'delete']
     queryset = Title.objects.all()
     serializer_class = TitleCreateSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -179,7 +179,7 @@ class CommentViewSet(ModelViewSet):
 class GenreViewSet(AbstractViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrGetList,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
