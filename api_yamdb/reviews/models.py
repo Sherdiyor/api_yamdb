@@ -22,7 +22,7 @@ class User(AbstractUser):
     bio = models.TextField(blank=True)
     username = models.CharField(unique=True,
                                 max_length=MAX_LENGTH_USERNAME,
-                                validators=[UnicodeUsernameValidator(),])
+                                validators=[UnicodeUsernameValidator(), ])
 
 
 class Category(models.Model):
