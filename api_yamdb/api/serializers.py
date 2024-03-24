@@ -1,21 +1,35 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-from reviews.models import Comment, Review, Category, Genre, Title
+
+from reviews.models import Category, Comment, Genre, Review, Title
 
 User = get_user_model()
+MAX_LENGTH = 254
+MAX_LENGTH_USERNAME = 150
 
 
 class UserCreationSerializer(serializers.Serializer):
     email = serializers.EmailField(
+        max_length=MAX_LENGTH,
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
     )
     username = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME,
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
+        validators=[UnicodeUsernameValidator()]
     )
+
+    def validate(self, data):
+        try:
+            User.objects.get_or_create(
+                username=data.get('username'),
+                email=data.get('email')
+            )
+        except Exception:
+            raise serializers.ValidationError('поле email или username занято')
+        return data
 
     def validate_username(self, value):
         if value.lower() == 'me':

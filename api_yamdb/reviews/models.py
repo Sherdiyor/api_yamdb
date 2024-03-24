@@ -1,6 +1,9 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+MAX_LENGTH_USERNAME = 150
 
 
 class User(AbstractUser):
@@ -17,6 +20,9 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=16, choices=ROLE_CHOICES, default=USER)
     bio = models.TextField(blank=True)
+    username = models.CharField(unique=True,
+                                max_length=MAX_LENGTH_USERNAME,
+                                validators=[UnicodeUsernameValidator(),])
 
 
 class Category(models.Model):

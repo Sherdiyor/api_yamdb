@@ -4,32 +4,26 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, mixins, viewsets
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.filters import SearchFilter
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.filters import SearchFilter
 
-from .permissions import (IsAdmin, IsAdminOrReadOnly,
-                          IsAuthorAdminModeratorOrReadOnly,
-                          )
-from .serializers import (ConfirmationCodeSerializer, UserCreationSerializer,
-                          UserSerializer, ConfirmationCodeSerializer,
-                          MeSerializer)
-from reviews.models import Review, Category, Title, Genre
-from .serializers import (
-    CommentSerializer,
-    ReviewSerializer,
-    CategorySerializer,
-    TitleReadSerializer,
-    TitleCreateSerializer,
-    GenreSerializer
-)
+from reviews.models import Category, Genre, Review, Title
+
 from .filters import TitleFilter
+from .permissions import (IsAdmin, IsAdminOrReadOnly,
+                          IsAuthorAdminModeratorOrReadOnly)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          ConfirmationCodeSerializer, GenreSerializer,
+                          MeSerializer, ReviewSerializer,
+                          TitleCreateSerializer, TitleReadSerializer,
+                          UserCreationSerializer, UserSerializer)
 
 User = get_user_model()
 
@@ -126,6 +120,7 @@ class CategoryViewSet(AbstractViewSet):
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(ModelViewSet):
@@ -183,3 +178,4 @@ class GenreViewSet(AbstractViewSet):
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
