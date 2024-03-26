@@ -1,13 +1,9 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db.models import Avg
 from rest_framework import serializers
 
-from reviews.models import Category, Comment, Genre, Review, Title
-
-User = get_user_model()
-MAX_LENGTH = 254
-MAX_LENGTH_USERNAME = 150
+from reviews.constants import MAX_LENGTH, MAX_LENGTH_USERNAME
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
 class UserCreationSerializer(serializers.Serializer):
@@ -85,11 +81,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username', read_only=True)
-    title = serializers.PrimaryKeyRelatedField(read_only=True)
-    review = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
-        fields = ('id', 'text', 'author', 'pub_date', 'review', 'title')
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
 
 
@@ -98,7 +92,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug')
-        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -116,7 +109,8 @@ class TitleCreateSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
         slug_field='slug',
-        many=True
+        many=True,
+        required=True
     )
 
     class Meta:

@@ -3,7 +3,18 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-MAX_LENGTH_USERNAME = 150
+from .constants import CURRENT_YEAR, MAX_LENGTH_CHARFIELD, MAX_LENGTH_USERNAME
+
+
+class AbstractModel(models.Model):
+    name = models.CharField(max_length=MAX_LENGTH_CHARFIELD)
+    slug = models.SlugField(unique=True)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.name[:20]
 
 
 class User(AbstractUser):
@@ -25,36 +36,36 @@ class User(AbstractUser):
                                 validators=[UnicodeUsernameValidator(), ])
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True)
+class Category(AbstractModel):
 
     class Meta:
         verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
 
-class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True)
+class Genre(AbstractModel):
 
     class Meta:
         verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
     name = models.CharField(max_length=200)
-    year = models.IntegerField()
+    year = models.PositiveSmallIntegerField(
+        validators=[MaxValueValidator(CURRENT_YEAR)])
     description = models.TextField(blank=True)
     genre = models.ManyToManyField(Genre, through='TitleGenre')
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='title'
+        related_name='titles'
     )
 
     class Meta:
         verbose_name = 'Произведения'
+        verbose_name_plural = 'Произведения'
 
 
 class TitleGenre(models.Model):
