@@ -1,7 +1,7 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
@@ -14,18 +14,15 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Review, Title
-
-from .filters import TitleFilter
-from .permissions import (IsAdmin, IsAdminOrReadOnly,
-                          IsAuthorAdminModeratorOrReadOnly)
-from .serializers import (CategorySerializer, CommentSerializer,
-                          ConfirmationCodeSerializer, GenreSerializer,
-                          MeSerializer, ReviewSerializer,
-                          TitleCreateSerializer, TitleReadSerializer,
-                          UserCreationSerializer, UserSerializer)
-
-User = get_user_model()
+from api.filters import TitleFilter
+from api.permissions import (IsAdmin, IsAdminOrReadOnly,
+                             IsAuthorAdminModeratorOrReadOnly)
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             ConfirmationCodeSerializer, GenreSerializer,
+                             MeSerializer, ReviewSerializer,
+                             TitleCreateSerializer, TitleReadSerializer,
+                             UserCreationSerializer, UserSerializer)
+from reviews.models import Category, Genre, Review, Title, User
 
 
 @api_view(['POST'])
@@ -110,12 +107,6 @@ class AbstractViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet
 ):
-    pass
-
-
-class CategoryViewSet(AbstractViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (SearchFilter,)
@@ -123,14 +114,24 @@ class CategoryViewSet(AbstractViewSet):
     lookup_field = 'slug'
 
 
+class CategoryViewSet(AbstractViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
 class TitleViewSet(ModelViewSet):
     http_method_names = ['get', 'head', 'options', 'post', 'patch', 'delete']
     queryset = Title.objects.all()
-    serializer_class = TitleCreateSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+
+    def get_queryset(self):
+        queryset = Title.objects.annotate(
+            rating=Avg('reviews__score')
+        ).all()
+        return queryset
 
     def get_serializer_class(self):
         if self.action in ['update', 'partial_update', 'create']:
@@ -174,8 +175,3 @@ class CommentViewSet(ModelViewSet):
 class GenreViewSet(AbstractViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = LimitOffsetPagination
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
