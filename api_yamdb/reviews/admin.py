@@ -18,7 +18,7 @@ class ReviewAdmin(admin.ModelAdmin):
         'score',
         'pub_date'
     )
-    search_fields = ('author',)
+    search_fields = ('author__username',)
 
 
 @admin.register(Comment)
@@ -34,7 +34,7 @@ class CommentAdmin(admin.ModelAdmin):
         'author',
         'pub_date'
     )
-    search_fields = ('author',)
+    search_fields = ('author__username',)
 
 
 @admin.register(Title)
@@ -54,6 +54,12 @@ class TitleAdmin(admin.ModelAdmin):
         'name',
         'year'
     )
+    list_editable = (
+        'category',
+    )
+
+    def get_geners(self, obj):
+        return [genre.genre for genre in obj.genre.all()]
 
 
 @admin.register(Genre)
