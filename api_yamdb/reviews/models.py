@@ -3,7 +3,9 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .constants import CURRENT_YEAR, MAX_LENGTH_CHARFIELD, MAX_LENGTH_USERNAME
+from .constants import (MAX_FIELD_LENGTH, MAX_LENGTH_CHARFIELD,
+                        MAX_LENGTH_USERNAME)
+from .validators import validate_year
 
 
 class AbstractModel(models.Model):
@@ -12,9 +14,10 @@ class AbstractModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['name']
 
     def __str__(self):
-        return self.name[:20]
+        return self.name[:MAX_FIELD_LENGTH]
 
 
 class User(AbstractUser):
@@ -38,14 +41,14 @@ class User(AbstractUser):
 
 class Category(AbstractModel):
 
-    class Meta:
+    class Meta(AbstractModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(AbstractModel):
 
-    class Meta:
+    class Meta(AbstractModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -53,7 +56,7 @@ class Genre(AbstractModel):
 class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.PositiveSmallIntegerField(
-        validators=[MaxValueValidator(CURRENT_YEAR)])
+        validators=[validate_year])
     description = models.TextField(blank=True)
     genre = models.ManyToManyField(Genre, through='TitleGenre')
     category = models.ForeignKey(
@@ -72,16 +75,20 @@ class TitleGenre(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='genres'
+        related_name='titlegenres'
     )
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        related_name='titles'
+        related_name='titlegenres'
     )
 
     class Meta:
-        verbose_name = 'Произведения и жанры'
+        verbose_name = 'Произведениe и жанр'
+        verbose_name_plural = 'Произведения и жанры'
+
+    def __str__(self):
+        return f'Произведения: {self.title}, жанр: {self.genre}.'
 
 
 class Review(models.Model):

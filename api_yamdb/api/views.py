@@ -120,18 +120,14 @@ class CategoryViewSet(AbstractViewSet):
 
 
 class TitleViewSet(ModelViewSet):
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).all()
     http_method_names = ['get', 'head', 'options', 'post', 'patch', 'delete']
-    queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-
-    def get_queryset(self):
-        queryset = Title.objects.annotate(
-            rating=Avg('reviews__score')
-        ).all()
-        return queryset
 
     def get_serializer_class(self):
         if self.action in ['update', 'partial_update', 'create']:
