@@ -1,5 +1,4 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db.models import Avg
 from rest_framework import serializers
 
 from reviews.constants import MAX_LENGTH, MAX_LENGTH_USERNAME
@@ -104,16 +103,11 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True, default=0)
 
     class Meta:
         model = Title
         fields = '__all__'
-
-    def get_rating(self, obj):
-        title = Title.objects.get(id=obj.id)
-        rating = title.reviews.all().aggregate(Avg('score'))
-        return rating['score__avg']
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
