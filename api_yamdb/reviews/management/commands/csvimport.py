@@ -22,16 +22,16 @@ FILES_TO_MODELS = {
 
 class Command(BaseCommand):
 
-    def handle(self, *args: os.Any, **options: os.Any):
+    def handle(self, *args, **options):
         for name, model in FILES_TO_MODELS.items():
             path = os.path.join(PATH_DATA, name)
 
-            with open(path, 'r') as file:
+            with open(path, 'r', encoding='utf8') as file:
                 reader = csv.DictReader(file)
-            try:
-                model.objects.bulk_create(
-                    model(**data) for data in reader
-                )
-                logging.info('Все данные загружены!')
-            except Exception as e:
-                logging.error(e)
+                try:
+                    model.objects.bulk_create(
+                        model(**data) for data in reader
+                    )
+                    logging.info('Все данные загружены!')
+                except Exception as e:
+                    logging.error(e)

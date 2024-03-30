@@ -44,7 +44,8 @@ class TitleAdmin(admin.ModelAdmin):
         'name',
         'year',
         'description',
-        'category'
+        'category',
+        'get_genres'
     )
     list_filter = (
         'name',
@@ -58,9 +59,12 @@ class TitleAdmin(admin.ModelAdmin):
         'category',
     )
 
-    @admin.display
+    @admin.display(description='Жанры')
     def get_genres(self, obj):
-        return [genre.name for genre in obj.genre.all()]
+        genre_str = ''
+        for genre in obj.genre.all():
+            genre_str.join(genre.name)
+        return genre_str
 
 
 @admin.register(Genre)
