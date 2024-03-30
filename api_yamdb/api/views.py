@@ -122,7 +122,7 @@ class CategoryViewSet(AbstractViewSet):
 class TitleViewSet(ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).all()
+    ).all().order_by('rating')
     http_method_names = ['get', 'head', 'options', 'post', 'patch', 'delete']
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination

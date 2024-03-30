@@ -58,8 +58,9 @@ class TitleAdmin(admin.ModelAdmin):
         'category',
     )
 
-    def get_geners(self, obj):
-        return [genre.genre for genre in obj.genre.all()]
+    @admin.display
+    def get_genres(self, obj):
+        return [genre.name for genre in obj.genre.all()]
 
 
 @admin.register(Genre)

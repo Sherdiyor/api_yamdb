@@ -70,6 +70,9 @@ class Title(models.Model):
         verbose_name = 'Произведения'
         verbose_name_plural = 'Произведения'
 
+    def __str__(self):
+        return self.name[:MAX_FIELD_LENGTH]
+
 
 class TitleGenre(models.Model):
     title = models.ForeignKey(
